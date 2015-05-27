@@ -1,5 +1,6 @@
 <?php
 
+session_name("ASPC_PHP_SESSION");
 session_set_cookie_params(0, "/", ".pomona.edu");
 session_start();
 error_log("Started session.");
@@ -48,12 +49,12 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 			$_SESSION["first"] = $result[1];
 			$_SESSION["last"] = $result[2];
 
-			# Redirect to desired location, or index.php
+			# Redirect to desired location, or the mainsite homepage
 			if (isset($_GET["redirect"]) && !empty($_GET["redirect"])) {
 				header("Location: " . $_GET["redirect"]);
 			}
 			else {
-				header("Location: http://aspc.pomona.edu/");
+				header("Location: https://aspc.pomona.edu/");
 			}
 		}
 	}
