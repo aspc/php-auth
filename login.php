@@ -13,7 +13,7 @@ if (isset($_SESSION["username"])) {
 	die();
 }
 
-# If there is a Django session cookie present, attempt to auth via Django
+# If there is a Django session cookie present, create the session using the Django session data
 elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 	error_log("Django cookie set.");
 	$django_session_id = $_COOKIE[$DJANGO_SESSION_COOKIE_NAME];
@@ -61,6 +61,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 }
 
 # Otherwise, redirect to Django auth to login there
+# This will redirect back here in turn to complete the PHP login; no further action required
 else {
 	header("Location: https://aspc.pomona.edu/accounts/login/");
 	die();
