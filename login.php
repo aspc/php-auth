@@ -18,7 +18,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 	$django_session_id = $_COOKIE[$DJANGO_SESSION_COOKIE_NAME];
 
 	# Checks if a Django session already exists, and returns the associated user data for the session if it does
-	$command = "python /home/mattdahl/main/public/peninsula/django_session.py " . escapeshellarg($django_session_id);
+	$command = "python " . getcwd() . "/django_session.py " . escapeshellarg($django_session_id);
 	$result = json_decode(shell_exec($command));
 	error_log("Result decoded.");
 
