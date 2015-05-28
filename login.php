@@ -78,7 +78,9 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 		}
 	}
 	else {
+		# Something unexpected happened... Don't know how to handle, so just try logging in again
 		error_log(var_dump($result));
+		header("Location: https://aspc.pomona.edu/accounts/login/");
 		die();
 	}
 }

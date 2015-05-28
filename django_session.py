@@ -7,6 +7,19 @@ def user(session_id):
 	POSTGRESQL_USERNAME = 'php_admin'  # Only has SELECT privs on the user_auth and django_session tables
 	POSTGRESQL_PASSWORD = 'oopCQ83th36XrIaT8mtGTO1ErL'
 
+	def _query(query):
+		try:
+			cursor = connection.cursor()
+			cursor.execute(query)
+			return cursor.fetchone()  # Returns a tuple
+		except psycopg2.DatabaseError, e:
+			return _build_error_dict(str(e))
+		finally:
+			cursor.close()
+
+	def _build_error_dict(message):
+		return {'error': message}
+
 	try:
 		connection = psycopg2.connect(database='main_django', user=POSTGRESQL_USERNAME, password=POSTGRESQL_PASSWORD)
 	except psycopg2.DatabaseError, e:
@@ -29,18 +42,5 @@ def user(session_id):
 		return _build_error_dict(str(e))
 	finally:
 		connection.close()
-
-	def _query(query):
-		try:
-			cursor = connection.cursor()
-			cursor.execute(query)
-			return cursor.fetchone()  # Returns a tuple
-		except psycopg2.DatabaseError, e:
-			return _build_error_dict(str(e))
-		finally:
-			cursor.close()
-
-	def _build_error_dict(message):
-		return {'error': message}
 
 print user(sys.argv[1])
