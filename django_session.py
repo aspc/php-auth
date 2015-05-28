@@ -4,8 +4,8 @@ import pickle
 import json
 
 def user(session_id):
-	POSTGRESQL_USERNAME = 'php_admin'  # Only has SELECT privs on the user_auth and django_session tables
-	POSTGRESQL_PASSWORD = 'oopCQ83th36XrIaT8mtGTO1ErL'
+	db_credentials = {}
+	execfile('/srv/www/main/public/inc/config.py', db_credentials)
 
 	def _query(query):
 		try:
@@ -21,7 +21,7 @@ def user(session_id):
 		return {'error': message}
 
 	try:
-		connection = psycopg2.connect(database='main_django', user=POSTGRESQL_USERNAME, password=POSTGRESQL_PASSWORD)
+		connection = psycopg2.connect(database='main_django', user=db_credentials['POSTGRESQL_USERNAME'], password=db_credentials['POSTGRESQL_PASSWORD'])
 	except psycopg2.DatabaseError, e:
 		return _build_error_dict(str(e))
 
