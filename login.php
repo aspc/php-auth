@@ -63,6 +63,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 				$_SESSION["username"] = $email_parts[0];
 				$_SESSION["first"] = $result[1];
 				$_SESSION["last"] = $result[2];
+				$_SESSION["is_faculty"] = $result[4];
 			}
 			catch (Exception $e) {
 				mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:68", (string)$e->getMessage());

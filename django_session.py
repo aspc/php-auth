@@ -37,6 +37,10 @@ def user(session_id):
 			user_id = session_data['_auth_user_id']
 
 			user_data = _query(query="SELECT username, first_name, last_name, email FROM auth_user WHERE id='{0}'".format(user_id))
+			is_faculty = _query(query="SELECT is_faculty FROM auth2_userdata WHERE user_id='{0}'".format(user_id))
+
+			user_data += is_faculty # Concatenate the tuples
+
 			return user_data
 	except Exception, e:
 		return _build_error_dict(message=str(e))
