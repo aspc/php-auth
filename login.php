@@ -17,6 +17,10 @@ session_start();
 
 $DJANGO_SESSION_COOKIE_NAME = "sessionid";
 
+function mail_error($line_number, $message) {
+	mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:" . (string)$line_number, (string)$message);
+}
+
 # If already logged in, redirect to the homepage
 # This should never happen in the normal login flow; this will only be triggered if the user
 # manually navigates to https://aspc.pomona.edu/php-auth/login.php himself after already logging in
@@ -39,14 +43,14 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 		$result = json_decode(shell_exec($command));
 	}
 	catch (Exception $e) {
-		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:42", (string)$e->getMessage());
+		mail_error(__LINE__, $e->getMessage());
 		die();
 	}
 
 	# Evaluates result
 	if (is_object($result) && property_exists($result, "error")) {
 		# Log the error and try logging in again through Django (might cause a redirect loop... lol)
-		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:49", escapeshellarg($django_session_id) . "\n" . (string)$result->stack_trace . "\n" . (string)$result->error);
+		mail_error(__LINE__, escapeshellarg($django_session_id) . "\n" . (string)$result->stack_trace . "\n" . (string)$result->error);
 		header("Location: https://aspc.pomona.edu/accounts/login/");
 		die();
 	}
@@ -66,7 +70,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 				$_SESSION["is_faculty"] = $result[4];
 			}
 			catch (Exception $e) {
-				mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:68", (string)$e->getMessage());
+				mail_error(__LINE__, $e->getMessage());
 				header("Location: https://aspc.pomona.edu/accounts/login/");
 				die();
 			}
@@ -86,7 +90,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 
 	# Something unexpected happened... Don't know how to handle, so just try logging in again
 	else {
-		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:88", (string)var_dump($result));
+		mail_error(__LINE__, var_dump($result));
 		header("Location: https://aspc.pomona.edu/accounts/login/");
 		die();
 	}
