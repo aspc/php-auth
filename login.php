@@ -46,7 +46,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 	# Evaluates result
 	if (is_object($result) && property_exists($result, "error")) {
 		# Log the error and try logging in again through Django (might cause a redirect loop... lol)
-		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:49", (string)$result->error);
+		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:49", (string)$result->stack_trace . "\n" . (string)$result->error);
 		header("Location: https://aspc.pomona.edu/accounts/login/");
 		die();
 	}

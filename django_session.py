@@ -2,6 +2,8 @@ import sys
 import psycopg2
 import pickle
 import json
+import inspect
+import traceback
 
 def user(session_id):
 	db_credentials = {}
@@ -18,7 +20,10 @@ def user(session_id):
 			cursor.close()
 
 	def _build_error_dict(message):
-		return {'error': message}
+		return {
+			'error': message,
+			'stack_trace': ''.join(traceback.format_stack(inspect.currentframe()))
+		}
 
 	try:
 		connection = psycopg2.connect(database='main_django', user=db_credentials['POSTGRESQL_USERNAME'], password=db_credentials['POSTGRESQL_PASSWORD'])
