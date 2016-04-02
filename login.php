@@ -18,6 +18,12 @@ session_start();
 $DJANGO_SESSION_COOKIE_NAME = "sessionid";
 
 function mail_error($line_number, $message) {
+	$message = (string)$message;
+
+	if (isset($GLOBALS['django_session_id'])) {
+		$message .= "\n\n" . "django_session_id: " . (string)$GLOBALS['django_session_id'];
+	}
+
 	mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:" . (string)$line_number, (string)$message);
 }
 
@@ -33,13 +39,13 @@ if (isset($_SESSION["username"])) {
 
 # If there is a Django session cookie present, create the session using the Django session data
 elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
-	$django_session_id = $_COOKIE[$DJANGO_SESSION_COOKIE_NAME];
+	$GLOBALS['django_session_id'] = escapeshellarg($_COOKIE[$DJANGO_SESSION_COOKIE_NAME]);
 
 	# Checks if a Django session already exists, and returns the associated user data for the session if it does
 	# We run this as a Python script because we have to use Postgres and Python's pickle library
 	# The session should exist in the database if the Django cookie has been set, so no error should happen here
 	try {
-		$command = "python " . getcwd() . "/django_session.py " . escapeshellarg($django_session_id);
+		$command = "python " . getcwd() . "/django_session.py " . $GLOBALS['django_session_id'];
 		$result = json_decode(shell_exec($command));
 	}
 	catch (Exception $e) {
@@ -50,7 +56,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 	# Evaluates result
 	if (is_object($result) && property_exists($result, "error")) {
 		# Log the error and try logging in again through Django (might cause a redirect loop... lol)
-		mail_error(__LINE__, escapeshellarg($django_session_id) . "\n" . (string)$result->stack_trace . "\n" . (string)$result->error);
+		mail_error(__LINE__, (string)$result->stack_trace . "\n" . (string)$result->error);
 		header("Location: https://aspc.pomona.edu/accounts/login/");
 		die();
 	}
