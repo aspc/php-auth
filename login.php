@@ -17,6 +17,16 @@ session_start();
 
 $DJANGO_SESSION_COOKIE_NAME = "sessionid";
 
+function mail_error($line_number, $message) {
+	$message = (string)$message;
+
+	if (isset($GLOBALS['django_session_id'])) {
+		$message .= "\n\n" . "django_session_id: " . (string)$GLOBALS['django_session_id'];
+	}
+
+	mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:" . (string)$line_number, (string)$message);
+}
+
 # If already logged in, redirect to the homepage
 # This should never happen in the normal login flow; this will only be triggered if the user
 # manually navigates to https://aspc.pomona.edu/php-auth/login.php himself after already logging in
@@ -29,24 +39,24 @@ if (isset($_SESSION["username"])) {
 
 # If there is a Django session cookie present, create the session using the Django session data
 elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
-	$django_session_id = $_COOKIE[$DJANGO_SESSION_COOKIE_NAME];
+	$GLOBALS['django_session_id'] = escapeshellarg($_COOKIE[$DJANGO_SESSION_COOKIE_NAME]);
 
 	# Checks if a Django session already exists, and returns the associated user data for the session if it does
 	# We run this as a Python script because we have to use Postgres and Python's pickle library
 	# The session should exist in the database if the Django cookie has been set, so no error should happen here
 	try {
-		$command = "python " . getcwd() . "/django_session.py " . escapeshellarg($django_session_id);
+		$command = "python " . getcwd() . "/django_session.py " . $GLOBALS['django_session_id'];
 		$result = json_decode(shell_exec($command));
 	}
 	catch (Exception $e) {
-		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:42", (string)$e->getMessage());
+		mail_error(__LINE__, $e->getMessage());
 		die();
 	}
 
 	# Evaluates result
 	if (is_object($result) && property_exists($result, "error")) {
 		# Log the error and try logging in again through Django (might cause a redirect loop... lol)
-		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:49", (string)$result->error);
+		mail_error(__LINE__, (string)$result->stack_trace . "\n" . (string)$result->error);
 		header("Location: https://aspc.pomona.edu/accounts/login/");
 		die();
 	}
@@ -66,7 +76,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 				$_SESSION["is_faculty"] = $result[4];
 			}
 			catch (Exception $e) {
-				mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:68", (string)$e->getMessage());
+				mail_error(__LINE__, $e->getMessage());
 				header("Location: https://aspc.pomona.edu/accounts/login/");
 				die();
 			}
@@ -86,7 +96,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 
 	# Something unexpected happened... Don't know how to handle, so just try logging in again
 	else {
-		mail("digitalmedia@aspc.pomona.edu", "[ASPC] PHP ERROR: login.php:88", (string)var_dump($result));
+		mail_error(__LINE__, var_dump($result));
 		header("Location: https://aspc.pomona.edu/accounts/login/");
 		die();
 	}
