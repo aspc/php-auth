@@ -85,7 +85,7 @@ elseif (isset($_COOKIE[$DJANGO_SESSION_COOKIE_NAME])) {
 		# Redirect to desired location, or the mainsite homepage
 		# Django will pass the redirect querystring parameter during the normal login flow
 		if (isset($_GET["redirect"]) && !empty($_GET["redirect"])) {
-			header("Location: " . $_GET["redirect"]);
+			header("Location: " . urldecode($_GET["redirect"]));
 			die();
 		}
 		else {
